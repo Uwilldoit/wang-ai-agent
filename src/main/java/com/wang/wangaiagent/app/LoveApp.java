@@ -2,12 +2,10 @@ package com.wang.wangaiagent.app;
 
 import com.wang.wangaiagent.advisor.MyLoggerAdvisor;
 import com.wang.wangaiagent.advisor.ReReadingAdvisor;
-import com.wang.wangaiagent.chatmemory.FileBasedChatMemory;
-import jakarta.annotation.Resource;
+import com.wang.wangaiagent.manager.mysql.DatabaseChatMemory;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
-import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.chat.memory.InMemoryChatMemory;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.chat.model.ChatResponse;
@@ -38,22 +36,42 @@ public class LoveApp {
      * 初始化 ChatClient
      * @param dashscopeChatModel 阿里大模型对象
      */
-    public LoveApp(ChatModel dashscopeChatModel) {
-        // 初始化基于文件的对话记忆
-//        String fileDir = System.getProperty("user.dir") + "/tmp/chat-memory";
-//        ChatMemory chatMemory = new FileBasedChatMemory(fileDir);
-        // 初始化基于文件的对话记忆
-        InMemoryChatMemory chatMemory  = new InMemoryChatMemory();
-        //构建一个带有默认系统提示和记忆顾问的ChatClient
+//    public LoveApp(ChatModel dashscopeChatModel) {
+//        // 初始化基于文件的对话记忆
+////        String fileDir = System.getProperty("user.dir") + "/tmp/chat-memory";
+////        ChatMemory chatMemory = new FileBasedChatMemory(fileDir);
+//        // 初始化基于文件的对话记忆
+//        InMemoryChatMemory chatMemory  = new InMemoryChatMemory();
+//        //构建一个带有默认系统提示和记忆顾问的ChatClient
+//        chatClient = ChatClient.builder(dashscopeChatModel)
+//                .defaultSystem(SYSTEM_PROMPT)
+//                .defaultAdvisors(new MessageChatMemoryAdvisor(chatMemory),
+//                        // 自定义日志 Advisor，可按需开启
+//                        new MyLoggerAdvisor())
+//                        //自定义推理增强Advisor，可按需开启
+////                        new ReReadingAdvisor()
+//                .build();
+//    }
+
+    /**
+     * 初始化 ChatClient
+     * @param dashscopeChatModel 阿里大模型对象
+     * @param databaseChatMemory 数据库对话记忆
+     */
+    public LoveApp(ChatModel dashscopeChatModel, DatabaseChatMemory databaseChatMemory) {
+        // 初始化基于数据库的对话记忆
         chatClient = ChatClient.builder(dashscopeChatModel)
                 .defaultSystem(SYSTEM_PROMPT)
-                .defaultAdvisors(new MessageChatMemoryAdvisor(chatMemory),
-                        // 自定义日志 Advisor，可按需开启
-                        new MyLoggerAdvisor())
-                        //自定义推理增强Advisor，可按需开启
-//                        new ReReadingAdvisor()
+                .defaultAdvisors(
+                        new MessageChatMemoryAdvisor(databaseChatMemory),
+                        new MyLoggerAdvisor(),
+                        new ReReadingAdvisor()
+                )
                 .build();
     }
+
+
+
 
     /**
      * 用于处理用户输入的聊天消息，调用聊天客户端向AI模型发起请求，并获取AI返回的响应内容

@@ -48,7 +48,7 @@ class LoveAppTest {
     @Test
     void doChat(){
         String chatId = UUID.randomUUID().toString();
-        String message = "你好，我是一个22岁的男生,我还没有对象，能不能帮我找一个,在玩逆水寒手游";
+        String message = "你好，我是一个22岁的男生,我还没有对象，能不能帮我找一个,我感觉自己这辈子都是单着了";
         String answer = loveApp.doChat(message, chatId);
         Assertions.assertNotNull(answer);
     }
