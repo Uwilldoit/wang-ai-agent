@@ -1,0 +1,94 @@
+package com.wang.wangaiagent.app;
+
+import com.wang.wangaiagent.advisor.MyLoggerAdvisor;
+import com.wang.wangaiagent.advisor.ReReadingAdvisor;
+import com.wang.wangaiagent.chatmemory.FileBasedChatMemory;
+import jakarta.annotation.Resource;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
+import org.springframework.ai.chat.memory.ChatMemory;
+import org.springframework.ai.chat.memory.InMemoryChatMemory;
+import org.springframework.ai.chat.model.ChatModel;
+import org.springframework.ai.chat.model.ChatResponse;
+import org.springframework.stereotype.Component;
+
+import java.util.List;
+
+import static org.springframework.ai.chat.client.advisor.AbstractChatMemoryAdvisor.CHAT_MEMORY_CONVERSATION_ID_KEY;
+
+/**
+ * @author: Shajia Wang
+ * @createTime: 2025/5/10---23:01
+ * @description:
+ */
+@Component
+@Slf4j
+public class LoveApp {
+
+    private final ChatClient chatClient;
+
+    public static final String SYSTEM_PROMPT = "扮演深耕恋爱心理领域的专家。开场向用户表明身份，告知用户可倾诉恋爱难题。\" +\n" +
+            "            \"围绕单身、恋爱、已婚三种状态提问：单身状态询问社交圈拓展及追求心仪对象的困扰；\" +\n" +
+            "            \"恋爱状态询问沟通、习惯差异引发的矛盾；已婚状态询问家庭责任与亲属关系处理的问题。\" +\n" +
+            "            \"引导用户详述事情经过、对方反应及自身想法，以便给出专属解决方案。";
+
+
+    /**
+     * 初始化 ChatClient
+     * @param dashscopeChatModel 阿里大模型对象
+     */
+    public LoveApp(ChatModel dashscopeChatModel) {
+        // 初始化基于文件的对话记忆
+//        String fileDir = System.getProperty("user.dir") + "/tmp/chat-memory";
+//        ChatMemory chatMemory = new FileBasedChatMemory(fileDir);
+        // 初始化基于文件的对话记忆
+        InMemoryChatMemory chatMemory  = new InMemoryChatMemory();
+        //构建一个带有默认系统提示和记忆顾问的ChatClient
+        chatClient = ChatClient.builder(dashscopeChatModel)
+                .defaultSystem(SYSTEM_PROMPT)
+                .defaultAdvisors(new MessageChatMemoryAdvisor(chatMemory),
+                        // 自定义日志 Advisor，可按需开启
+                        new MyLoggerAdvisor())
+                        //自定义推理增强Advisor，可按需开启
+//                        new ReReadingAdvisor()
+                .build();
+    }
+
+    /**
+     * 用于处理用户输入的聊天消息，调用聊天客户端向AI模型发起请求，并获取AI返回的响应内容
+     * @param message 用户消息
+     * @param chatId 会话ID
+     * @return AI返回的响应内容
+     */
+    public String doChat(String message,String chatId){
+        ChatResponse response = chatClient.prompt()
+                .user(message)
+                .advisors(advisorSpec -> advisorSpec.param(CHAT_MEMORY_CONVERSATION_ID_KEY, chatId))
+                .call()
+                .chatResponse();
+        String content = response.getResult().getOutput().getText();
+        log.info("AI Response: {}", content);
+        return content;
+    }
+
+    /**
+     * 定义恋爱报告类
+     * @param title
+     * @param suggestions
+     */
+    record LoveReport(String title, List<String> suggestions) {
+    }
+
+    public LoveReport doChatWithReport(String message,String chatId){
+        LoveReport loveReport = chatClient.prompt()
+                .system(SYSTEM_PROMPT + "每次对话后都要生成恋爱结果，标题为{用户名}的恋爱报告，内容为建议列表")
+                .user(message)
+                .advisors(advisorSpec -> advisorSpec.param(CHAT_MEMORY_CONVERSATION_ID_KEY, chatId)
+                        .param(CHAT_MEMORY_CONVERSATION_ID_KEY, 10))
+                .call()
+                .entity(LoveReport.class);
+        log.info("loveReport: {}", loveReport);
+        return loveReport;
+    }
+}
