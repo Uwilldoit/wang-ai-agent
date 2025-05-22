@@ -3,12 +3,17 @@ package com.wang.wangaiagent.app;
 import com.wang.wangaiagent.advisor.MyLoggerAdvisor;
 import com.wang.wangaiagent.advisor.ReReadingAdvisor;
 import com.wang.wangaiagent.manager.mysql.DatabaseChatMemory;
+import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
+import org.springframework.ai.chat.client.advisor.QuestionAnswerAdvisor;
+import org.springframework.ai.chat.client.advisor.api.Advisor;
 import org.springframework.ai.chat.memory.InMemoryChatMemory;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.chat.model.ChatResponse;
+import org.springframework.ai.vectorstore.VectorStore;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -30,6 +35,8 @@ public class LoveApp {
             "            \"围绕单身、恋爱、已婚三种状态提问：单身状态询问社交圈拓展及追求心仪对象的困扰；\" +\n" +
             "            \"恋爱状态询问沟通、习惯差异引发的矛盾；已婚状态询问家庭责任与亲属关系处理的问题。\" +\n" +
             "            \"引导用户详述事情经过、对方反应及自身想法，以便给出专属解决方案。";
+    @Autowired
+    private Advisor loveAppRagCloudAdvisor;
 
 
     /**
@@ -109,4 +116,33 @@ public class LoveApp {
         log.info("loveReport: {}", loveReport);
         return loveReport;
     }
+
+    @Resource
+    private VectorStore loveAppVectorStore;
+
+    /**
+     * 和RAG知识库进行对话
+     * @param message 用户消息
+     * @param chatId 会话ID
+     * @return AI返回的响应内容
+     */
+    public String doChatWithRag(String message,String chatId){
+        ChatResponse response = chatClient
+                .prompt()
+                .user(message).
+                advisors(advisorSpec -> advisorSpec.param(CHAT_MEMORY_CONVERSATION_ID_KEY, chatId)
+                        .param(CHAT_MEMORY_CONVERSATION_ID_KEY, 10))
+                //开启日志，便于观察效果
+                .advisors(new MyLoggerAdvisor())
+                //应用RAG知识库问答
+//                .advisors(new QuestionAnswerAdvisor(loveAppVectorStore))
+                //应用增强检索服务（云知识库服务）
+                .advisors(loveAppRagCloudAdvisor)
+                .call()
+                .chatResponse();
+        String content = response.getResult().getOutput().getText();
+        log.info("AI Response: {}", content);
+        return content;
+    }
+
 }
