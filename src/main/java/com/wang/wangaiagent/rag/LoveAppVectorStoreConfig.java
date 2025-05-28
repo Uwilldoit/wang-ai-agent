@@ -17,7 +17,7 @@ import java.util.List;
  * @description: 恋爱大师向量数据库配置（初始化基于内存的数据库Bean）
  */
 
-@Configuration
+//@Configuration
 public class LoveAppVectorStoreConfig {
     @Resource
     private LoveAppDocumentLoader loveAppDocumentLoader;
@@ -30,6 +30,7 @@ public class LoveAppVectorStoreConfig {
     @Bean
     VectorStore loveAppVectorStore(EmbeddingModel dashScopeEmbeddingModel) {
         SimpleVectorStore simpleVectorStore =  SimpleVectorStore.builder(dashScopeEmbeddingModel).build();
+        //加载文档
         List<Document> documentList = loveAppDocumentLoader.loadMarkdowns();
         simpleVectorStore.add(documentList);
         return simpleVectorStore;

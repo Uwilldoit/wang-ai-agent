@@ -20,7 +20,7 @@ import java.util.List;
  */
 @Component
 @Slf4j
-class LoveAppDocumentLoader {
+public class LoveAppDocumentLoader {
 
     private final ResourcePatternResolver resourcePatternResolver;
 
@@ -39,11 +39,13 @@ class LoveAppDocumentLoader {
             Resource[] resources = resourcePatternResolver.getResources("classpath:document/*.md");
             for (Resource resource : resources) {
                 String fileName = resource.getFilename();
+                String status = fileName.substring(fileName.length() - 6, fileName.length() - 4);
                 MarkdownDocumentReaderConfig config = MarkdownDocumentReaderConfig.builder()
                         .withHorizontalRuleCreateDocument(true)
                         .withIncludeCodeBlock(false)
                         .withIncludeBlockquote(false)
                         .withAdditionalMetadata("filename", fileName)
+                        .withAdditionalMetadata("status", status)
                         .build();
                 MarkdownDocumentReader reader = new MarkdownDocumentReader(resource, config);
                 allDocuments.addAll(reader.get());

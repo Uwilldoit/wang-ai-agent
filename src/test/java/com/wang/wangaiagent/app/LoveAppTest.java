@@ -1,5 +1,6 @@
 package com.wang.wangaiagent.app;
 
+import com.wang.wangaiagent.rag.LoveAppDocumentLoader;
 import jakarta.annotation.Resource;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -17,6 +18,8 @@ class LoveAppTest {
 
     @Resource
     private LoveApp loveApp;
+
+
 
     @Test
     void testChat() {
@@ -49,12 +52,12 @@ class LoveAppTest {
     void doChat(){
         String chatId = UUID.randomUUID().toString();
         String message = "你好，我是一个22岁的男生,我还没有对象，能不能帮我找一个,我感觉自己这辈子都是单着了";
-        String answer = loveApp.doChat(message, chatId);
+        String answer = loveApp.doChatWithRag(message, chatId);
         Assertions.assertNotNull(answer);
     }
 
     @Test
-    void doChatWithVectorStore() {
+    void doChatWithRag() {
         String chatId = UUID.randomUUID().toString();
         String message = "我已经结婚了，但是婚后关系不太亲密，我该怎么办";
         String answer = loveApp.doChatWithRag(message, chatId);

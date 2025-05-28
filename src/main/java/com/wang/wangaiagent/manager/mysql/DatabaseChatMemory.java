@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
  * @createTime: 2025/5/11---17:48
  * @description:
  */
-@Component
+//@Component
 @RequiredArgsConstructor
 public class DatabaseChatMemory implements ChatMemory {
 

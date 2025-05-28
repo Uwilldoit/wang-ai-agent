@@ -3,6 +3,8 @@ package com.wang.wangaiagent.app;
 import com.wang.wangaiagent.advisor.MyLoggerAdvisor;
 import com.wang.wangaiagent.advisor.ReReadingAdvisor;
 import com.wang.wangaiagent.manager.mysql.DatabaseChatMemory;
+import com.wang.wangaiagent.rag.LoveAppRagCustomAdvisorFactory;
+import com.wang.wangaiagent.rag.QueryRewriter;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
@@ -14,6 +16,7 @@ import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -38,44 +41,48 @@ public class LoveApp {
     @Autowired
     private Advisor loveAppRagCloudAdvisor;
 
+    @Qualifier("pgVectorVectorStore")
+    @Autowired
+    private VectorStore pgVectorVectorStore;
+
 
     /**
      * 初始化 ChatClient
      * @param dashscopeChatModel 阿里大模型对象
      */
-//    public LoveApp(ChatModel dashscopeChatModel) {
-//        // 初始化基于文件的对话记忆
-////        String fileDir = System.getProperty("user.dir") + "/tmp/chat-memory";
-////        ChatMemory chatMemory = new FileBasedChatMemory(fileDir);
-//        // 初始化基于文件的对话记忆
-//        InMemoryChatMemory chatMemory  = new InMemoryChatMemory();
-//        //构建一个带有默认系统提示和记忆顾问的ChatClient
-//        chatClient = ChatClient.builder(dashscopeChatModel)
-//                .defaultSystem(SYSTEM_PROMPT)
-//                .defaultAdvisors(new MessageChatMemoryAdvisor(chatMemory),
-//                        // 自定义日志 Advisor，可按需开启
-//                        new MyLoggerAdvisor())
-//                        //自定义推理增强Advisor，可按需开启
-////                        new ReReadingAdvisor()
-//                .build();
-//    }
-
-    /**
-     * 初始化 ChatClient
-     * @param dashscopeChatModel 阿里大模型对象
-     * @param databaseChatMemory 数据库对话记忆
-     */
-    public LoveApp(ChatModel dashscopeChatModel, DatabaseChatMemory databaseChatMemory) {
-        // 初始化基于数据库的对话记忆
+    public LoveApp(ChatModel dashscopeChatModel) {
+        // 初始化基于文件的对话记忆
+//        String fileDir = System.getProperty("user.dir") + "/tmp/chat-memory";
+//        ChatMemory chatMemory = new FileBasedChatMemory(fileDir);
+        // 初始化基于文件的对话记忆
+        InMemoryChatMemory chatMemory  = new InMemoryChatMemory();
+        //构建一个带有默认系统提示和记忆顾问的ChatClient
         chatClient = ChatClient.builder(dashscopeChatModel)
                 .defaultSystem(SYSTEM_PROMPT)
-                .defaultAdvisors(
-                        new MessageChatMemoryAdvisor(databaseChatMemory),
+                .defaultAdvisors(new MessageChatMemoryAdvisor(chatMemory),
+                        // 自定义日志 Advisor，可按需开启
                         new MyLoggerAdvisor(),
-                        new ReReadingAdvisor()
-                )
+                        //自定义推理增强Advisor，可按需开启
+                        new ReReadingAdvisor())
                 .build();
     }
+
+//    /**
+//     * 初始化 ChatClient
+//     * @param dashscopeChatModel 阿里大模型对象
+//     * @param databaseChatMemory 数据库对话记忆
+//     */
+//    public LoveApp(ChatModel dashscopeChatModel, DatabaseChatMemory databaseChatMemory) {
+//        // 初始化基于数据库的对话记忆
+//        chatClient = ChatClient.builder(dashscopeChatModel)
+//                .defaultSystem(SYSTEM_PROMPT)
+//                .defaultAdvisors(
+//                        new MessageChatMemoryAdvisor(databaseChatMemory),
+//                        new MyLoggerAdvisor(),
+//                        new ReReadingAdvisor()
+//                )
+//                .build();
+//    }
 
 
 
@@ -120,6 +127,10 @@ public class LoveApp {
     @Resource
     private VectorStore loveAppVectorStore;
 
+    @Resource
+    private QueryRewriter queryRewriter;
+
+
     /**
      * 和RAG知识库进行对话
      * @param message 用户消息
@@ -127,17 +138,23 @@ public class LoveApp {
      * @return AI返回的响应内容
      */
     public String doChatWithRag(String message,String chatId){
+        message = queryRewriter.doQueryRewriter(message);
         ChatResponse response = chatClient
                 .prompt()
                 .user(message).
                 advisors(advisorSpec -> advisorSpec.param(CHAT_MEMORY_CONVERSATION_ID_KEY, chatId)
                         .param(CHAT_MEMORY_CONVERSATION_ID_KEY, 10))
                 //开启日志，便于观察效果
-                .advisors(new MyLoggerAdvisor())
+//                .advisors(new MyLoggerAdvisor())
                 //应用RAG知识库问答
 //                .advisors(new QuestionAnswerAdvisor(loveAppVectorStore))
                 //应用增强检索服务（云知识库服务）
-                .advisors(loveAppRagCloudAdvisor)
+//                .advisors(loveAppRagCloudAdvisor)
+                //应用RAG检索增强服务（基于PgVector 向量存储）
+                .advisors(new QuestionAnswerAdvisor(pgVectorVectorStore))
+//                .advisors(LoveAppRagCustomAdvisorFactory.createLoveAppRagCustomAdvisor(
+//                        loveAppVectorStore,"单身"
+//                ))
                 .call()
                 .chatResponse();
         String content = response.getResult().getOutput().getText();
