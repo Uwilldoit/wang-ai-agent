@@ -91,7 +91,13 @@ class LoveAppTest {
     }
 
 
-
+    @Test
+    void doChatWithMcp() {
+        String chatId = UUID.randomUUID().toString();
+        // 测试howToCook MCP
+        String message = "帮我推荐一些菜，我对象喜欢吃鸡";
+        String answer =  loveApp.doChatWithMcp(message, chatId);
+    }
 
 }
 
