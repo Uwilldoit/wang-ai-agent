@@ -9,7 +9,7 @@ import reactor.core.publisher.Flux;
  * @author: Shajia Wang
  * @createTime: 2025/5/11---00:48
  * @description: 自定义日志 Advisor
- *  * 打印 info 级别日志、只输出单次用户提示词和 AI 回复的文本
+ *  打印 info 级别日志、只输出单次用户提示词和 AI 回复的文本
  */
 
 @Slf4j
@@ -17,7 +17,7 @@ public class MyLoggerAdvisor implements CallAroundAdvisor, StreamAroundAdvisor {
 
     /**
      * 获取名字
-     * @return
+     * @return 名字
      */
     @Override
     public String getName() {

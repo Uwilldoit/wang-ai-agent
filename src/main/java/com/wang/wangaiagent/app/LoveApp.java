@@ -14,8 +14,10 @@ import org.springframework.ai.chat.client.advisor.api.Advisor;
 import org.springframework.ai.chat.memory.InMemoryChatMemory;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.chat.model.ChatResponse;
+import org.springframework.ai.image.ImageModel;
 import org.springframework.ai.tool.ToolCallback;
 import org.springframework.ai.tool.ToolCallbackProvider;
+import org.springframework.ai.vectorstore.SearchRequest;
 import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -215,6 +217,24 @@ public class LoveApp {
         String content = response.getResult().getOutput().getText();
         log.info("content: {}", content);
         return content;
+    }
+
+
+    public String test(String message,String chatId){
+
+
+        ChatResponse response = chatClient
+                .prompt()
+                .advisors(new QuestionAnswerAdvisor(
+                        pgVectorVectorStore,
+                        SearchRequest.
+                                builder()
+                                .topK(5)
+                                .build()))
+                .call().chatResponse();
+
+        return response.getResult().getOutput().getText();
+
     }
 
 

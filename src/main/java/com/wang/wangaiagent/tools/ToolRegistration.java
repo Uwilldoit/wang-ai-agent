@@ -26,13 +26,15 @@ public class ToolRegistration {
         ResourceDownloadTool resourceDownloadTool = new ResourceDownloadTool();
         TerminalOperationTool terminalOperationTool = new TerminalOperationTool();
         PDFGenerationTool pdfGenerationTool = new PDFGenerationTool();
+        TerminateTool terminateTool = new TerminateTool();
         return ToolCallbacks.from(
                 fileOperationTool,
                 webSearchTool,
                 webScrapingTool,
                 resourceDownloadTool,
                 terminalOperationTool,
-                pdfGenerationTool
+                pdfGenerationTool,
+                terminateTool
         );
     }
 }
