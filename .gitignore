@@ -4,7 +4,7 @@ target/
 !**/src/main/**/target/
 !**/src/test/**/target/
 tmp
-src/main/resources/mcp-servers.json
+
 
 ### STS ###
 .apt_generated
@@ -37,3 +37,4 @@ build/
 ### custom ###
 application-local.yml
 application-prod.yml
+src/main/resources/mcp-servers.json
