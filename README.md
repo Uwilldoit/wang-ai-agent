@@ -36,7 +36,7 @@
 - 第三方接口：如SearchAPI
 - 工具库如：Kryo 高性能序列化 +Jsoup 网页抓取 + iText PDF 生成 + Knife4j 接口文档 + Hutool 工具
 
-
+前端使用cursor进行生成，用到的是vue3.
 
 
 
@@ -148,7 +148,7 @@ npm run build
 ```
 wang-ai-agent-frontend/
 ├─ public/
-│  ├─ ai-love-avatar.png         # AI 恋爱大军师头像
+│  ├─ ai-love-avatar.png         # AI 恋爱军师头像
 │  └─ ai-manus-avatar.png        # AI 超级智能体头像
 ├─ src/
 │  ├─ main.js                    # 入口文件
