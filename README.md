@@ -44,40 +44,9 @@
 
 ### 后端
 
-必须启动的服务包含 `wang-howtocook-mcp-server`、`PostgreSQL`、`MySQL`
+必须启动的服务包含`PostgreSQL`、`MySQL`
 
-本地将`wang-howtocook-mcp-server`运行`maven`
-
-中的`package`打包，并在`resources`目录下新建文件 `mcp-servers.json`，文件内容如下：
-
-```json
-{
-  "mcpServers": {
-    "amap-maps": {
-      "command": "npx.cmd",(这里是Windows系统的运行命令，Linux或Mac去掉.cmd)
-      "args": [
-        "-y",
-        "@amap/amap-maps-mcp-server"
-      ],
-      "env": {
-        "AMAP_MAPS_API_KEY": "你的高德地图MCP的API"
-      }
-    },
-    "wang-howtocook-mcp-server": {
-      "command": "java",
-      "args": [
-        "-Dspring.ai.mcp.server.stdio=true",
-        "-Dspring.main.web-application-type=none",
-        "-Dlogging.pattern.console=",
-        "-jar",
-        "wang-howtocook-mcp-server/target/wang-howtocook-mcp-server-0.0.1-SNAPSHOT.jar"
-      ],
-      "env": {}
-    }
-  }
-}
-```
-
+本地将`wang-howtocook-mcp-server`运行
 
 
 `application-local.yml`文件内容如下：
