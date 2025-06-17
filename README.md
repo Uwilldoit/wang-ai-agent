@@ -54,7 +54,7 @@
 {
   "mcpServers": {
     "amap-maps": {
-      "command": "npx.cmd",(这里是Windows系统的运行命令，Linux或Mac)
+      "command": "npx.cmd",(这里是Windows系统的运行命令，Linux或Mac去掉.cmd)
       "args": [
         "-y",
         "@amap/amap-maps-mcp-server"
