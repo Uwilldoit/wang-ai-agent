@@ -61,6 +61,8 @@
 			<artifactId>knife4j-openapi3-jakarta-spring-boot-starter</artifactId>
 			<version>4.4.0</version>
 		</dependency>
+
+
 		<dependency>
 			<groupId>com.alibaba.cloud.ai</groupId>
 			<artifactId>spring-ai-alibaba-starter</artifactId>
@@ -149,6 +151,7 @@
 
 
 
+
 		<dependency>
 			<groupId>com.baomidou</groupId>
 			<artifactId>mybatis-plus-spring-boot3-starter</artifactId>
@@ -169,16 +172,6 @@
 	</dependencies>
 
 
-	<repositories>
-		<repository>
-			<id>spring-milestones</id>
-			<name>Spring Milestones</name>
-			<url>https://repo.spring.io/libs-milestone-local</url>
-			<snapshots>
-				<enabled>false</enabled>
-			</snapshots>
-		</repository>
-	</repositories>
 
 	<build>
 		<plugins>

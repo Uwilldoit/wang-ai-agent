@@ -22,7 +22,7 @@ class HowToCookToolTest {
 
     @Test
     void searchRecipes(){
-        List<HowToCookTool.Recipe> recipes = howToCookTool.searchRecipes("鸡");
+        List<HowToCookTool.Recipe> recipes = howToCookTool.searchRecipes("鸡肉");
 
         Assertions.assertNotNull(recipes);
     }

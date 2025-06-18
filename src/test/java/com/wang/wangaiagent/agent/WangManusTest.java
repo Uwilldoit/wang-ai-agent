@@ -20,9 +20,7 @@ class WangManusTest {
     @Test
     void run() {
         String userPrompt = """
-                我的另一半是广东人，居住在上海静安区，请帮我找到 3 公里内合适的买菜地点，
-                并结合菜谱，制定一份详细的做菜攻略
-                并以 PDF 格式输出""";
+                我的另一半比较喜欢吃鸡，参数用中文，使用我提供的MCP服务，推荐菜单给我""";
         String answer = wangManus.run(userPrompt);
         Assertions.assertNotNull(answer);
     }

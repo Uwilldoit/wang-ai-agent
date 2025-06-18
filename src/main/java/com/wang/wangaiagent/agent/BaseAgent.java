@@ -6,7 +6,9 @@ import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.jsoup.internal.StringUtil;
 import org.springframework.ai.chat.client.ChatClient;
+
 import org.springframework.ai.chat.messages.Message;
+import org.springframework.ai.chat.messages.MessageType;
 import org.springframework.ai.chat.messages.UserMessage;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
@@ -33,20 +35,21 @@ public abstract class BaseAgent {
 
     /**
      * 提示
-      */
+     */
     private String systemPrompt;
     private String nextStepPrompt;
 
     /**
      * 用于控制智能体的执行流程，记录状态，默认初始为空闲
-      */
+     */
     private AgentState state = AgentState.IDLE;
 
     /**
      * 执行控制，用于记录最大步骤数和当前步骤数
-      */
+     */
     private int maxSteps = 10;
     private int currentStep = 0;
+    private int duplicateThreshold = 2;
 
     /**
      * LLM，可由调用方传入具体调用大模型的对象，更加灵活
@@ -70,7 +73,7 @@ public abstract class BaseAgent {
             throw new RuntimeException("Cannot run agent from state: " + this.state);
         }
         if (StringUtil.isBlank(userPrompt)) {
-            throw new RuntimeException("Cannot run agent with empty user prompt");
+            throw new RuntimeException("对话输入不能为空");
         }
         // 更改状态
         state = AgentState.RUNNING;
@@ -85,13 +88,17 @@ public abstract class BaseAgent {
                 log.info("Executing step {}/{}", stepNumber, maxSteps);
                 // 单步执行
                 String stepResult = step();
+                // 每一步 step 执行完都要检查是否陷入循环
+                if (isStuck()) {
+                    handleStuckState();
+                }
                 String result = "Step " + stepNumber + ": " + stepResult;
                 results.add(result);
             }
             // 检查是否超出步骤限制
             if (currentStep >= maxSteps) {
                 state = AgentState.FINISHED;
-                results.add("Terminated: Reached max steps (" + maxSteps + ")");
+                results.add("Terminated: 达到最大步数 (" + maxSteps + ")");
             }
             return String.join("\n", results);
         } catch (Exception e) {
@@ -140,8 +147,11 @@ public abstract class BaseAgent {
 
                         // 单步执行
                         String stepResult = step();
+                        // 每一步 step 执行完都要检查是否陷入循环
+                        if (isStuck()) {
+                            handleStuckState();
+                        }
                         String result = "Step " + stepNumber + ": " + stepResult;
-
                         // 发送每一步的结果
                         emitter.send(result);
                     }
@@ -187,6 +197,49 @@ public abstract class BaseAgent {
 
         return emitter;
     }
+
+
+    /**
+     * 处理陷入循环的状态
+     */
+    protected void handleStuckState() {
+        String stuckPrompt = "观察到重复响应。考虑新策略，避免重复已尝试过的无效路径。";
+        this.nextStepPrompt = stuckPrompt + "\n" + (this.nextStepPrompt != null ? this.nextStepPrompt : "");
+        System.out.println("Agent detected stuck state. Added prompt: " + stuckPrompt);
+    }
+
+/**
+ * 判断对话是否陷入循环无法进行下去
+ * 此方法通过检查消息列表中是否存在超过阈值的重复回复来确定对话是否“卡住”
+ *
+ * @return 如果对话卡住，则返回true；否则返回false
+ */
+private boolean isStuck() {
+    // 如果消息数量少于2条，则不足以判断是否卡住
+    if (messageList.size() < 2) return false;
+
+    // 获取最后一条消息
+    Message lastMessage = messageList.get(messageList.size() - 1);
+    // 如果最后一条消息或其文本为空，则不足以判断
+    if (lastMessage == null || lastMessage.getText() == null) return false;
+
+    // 初始化重复计数
+    int duplicateCount = 0;
+    // 从倒数第二条消息开始向前遍历，寻找与最后一条消息重复的助手消息
+    for (int i = messageList.size() - 2; i >= 0; i--) {
+        Message msg = messageList.get(i);
+        // 如果找到消息类型为ASSISTANT且文本内容与最后一条消息相同的，则增加重复计数
+        if (MessageType.ASSISTANT.equals(msg.getMessageType()) &&
+                lastMessage.getText().equals(msg.getText())) {
+            duplicateCount++;
+        }
+        // 如果重复次数达到或超过阈值，则认为对话卡住
+        if (duplicateCount >= duplicateThreshold) return true;
+    }
+
+    // 如果没有找到足够的重复消息，则认为对话没有卡住
+    return false;
+}
 
 
 

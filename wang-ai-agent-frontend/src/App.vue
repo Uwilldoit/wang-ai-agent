@@ -4,7 +4,7 @@
       <div class="logo">AI Agent</div>
       <nav>
         <router-link to="/">主页</router-link>
-        <router-link to="/love">AI 恋爱大师</router-link>
+        <router-link to="/love">AI 恋爱军师</router-link>
         <router-link to="/manus">AI 超级智能体</router-link>
       </nav>
     </header>

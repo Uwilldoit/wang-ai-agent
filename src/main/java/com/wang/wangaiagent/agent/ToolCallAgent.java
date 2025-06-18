@@ -3,6 +3,7 @@ package com.wang.wangaiagent.agent;
 import cn.hutool.core.collection.CollUtil;
 import com.alibaba.cloud.ai.dashscope.chat.DashScopeChatOptions;
 import com.wang.wangaiagent.agent.model.AgentState;
+import jakarta.annotation.Resource;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.extern.slf4j.Slf4j;
@@ -16,6 +17,7 @@ import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.ai.model.tool.ToolCallingManager;
 import org.springframework.ai.model.tool.ToolExecutionResult;
 import org.springframework.ai.tool.ToolCallback;
+import org.springframework.ai.tool.ToolCallbackProvider;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -45,6 +47,9 @@ public class ToolCallAgent extends ReActAgent {
      * 工具调用管理者
      */
     private final ToolCallingManager toolCallingManager;
+
+    @Resource
+    private ToolCallbackProvider toolCallbackProvider;
 
      /**
       * 禁用内置的工具调用机制，自己维护上下文
@@ -81,6 +86,7 @@ public class ToolCallAgent extends ReActAgent {
                     .prompt(prompt)
                     .system(getSystemPrompt())
                     .tools(availableTools)
+                    .tools(toolCallbackProvider)
                     .call()
                     .chatResponse();
             this.toolCallChatResponse= chatResponse;

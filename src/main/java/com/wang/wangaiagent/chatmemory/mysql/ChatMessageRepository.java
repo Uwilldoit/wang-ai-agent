@@ -1,4 +1,4 @@
-package com.wang.wangaiagent.manager.mysql;
+package com.wang.wangaiagent.chatmemory.mysql;
 
 import com.baomidou.mybatisplus.extension.repository.CrudRepository;
 import com.wang.wangaiagent.mapper.ChatMessageMapper;

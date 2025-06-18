@@ -1,4 +1,4 @@
-package com.wang.wangaiagent.manager.mysql;
+package com.wang.wangaiagent.chatmemory.mysql;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.wang.wangaiagent.config.MessageConverter;
@@ -6,8 +6,6 @@ import com.wang.wangaiagent.model.entity.ChatMessage;
 import lombok.RequiredArgsConstructor;
 import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.chat.messages.Message;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.stereotype.Component;
 
 import java.util.Collections;
 import java.util.List;
